@@ -23,9 +23,10 @@ const app = express();
    CORS
 ============================= */
 const corsOptions = {
-  origin: "*",
-  credentials: true
+  origin: "*"
 };
+
+app.use(cors(corsOptions));
 
 /* =============================
    Upload Folder Setup
@@ -43,6 +44,7 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadPath);
   },
+
   filename: (req, file, cb) => {
     cb(null, Date.now() + "-" + file.originalname);
   }
@@ -55,34 +57,41 @@ const upload = multer({ storage });
 ============================= */
 mongoose
   .connect(process.env.DB_URL)
-  .then(() => console.log(" MongoDB Connected"))
-  .catch((err) => console.error(" DB Error:", err));
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch((err) => console.log("❌ DB Error:", err));
 
 /* =============================
    Middlewares
 ============================= */
-app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-/* Static Images */
+/* =============================
+   Static Folder
+============================= */
 app.use("/images", express.static(uploadPath));
 
 /* =============================
-   API ROUTES
+   API Routes
 ============================= */
 app.use("/api", router);
 
 /* =============================
-   HERO ROUTES
+   Hero Routes
 ============================= */
+
 // app.get("/addhero", gethero);
 
-// app.post("/addhero", upload.single("heroimage"), addhero);
+// app.post(
+//   "/addhero",
+//   upload.single("heroimage"),
+//   addhero
+// );
 
 /* =============================
-   ABOUT ROUTES
+   About Routes
 ============================= */
+
 app.get("/addAbout", getAbout);
 
 app.post(
@@ -94,18 +103,20 @@ app.post(
   addAbout
 );
 
-
-
-console.log("JWT:", process.env.JWT_SECRET);
 /* =============================
-   SERVER START
+   Default Route
+============================= */
+app.get("/", (req, res) => {
+  res.send("TripzyGo Backend Running 🚀");
+});
+
+/* =============================
+   Server Start
 ============================= */
 const PORT = process.env.PORT || 5000;
 
-if (process.env.NODE_ENV !== "production") {
-  app.listen(PORT, () => {
-    console.log(` Server running on http://localhost:${PORT}`);
-  });
-}
+app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+});
 
 export default app;
